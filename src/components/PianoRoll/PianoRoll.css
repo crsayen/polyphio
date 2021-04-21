@@ -1,0 +1,31 @@
+#PianoRoll {
+    background-color: rgb(255, 228, 228);
+    width: 100%;
+    min-height: 10rem;
+    height: 100%;
+    overflow-y: scroll;
+}
+
+p {
+    color: black;
+}
+
+
+
+.whitekey, .blackkey {
+    display: flex;
+    direction: row;
+    border-top: 1px solid black;
+    height: 20px;
+    padding: 0;
+}
+
+.blackkey {
+    background-color: rgb(203, 203, 203);
+    color: white;
+}
+
+.whitekey {
+    background-color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
+}

@@ -19,11 +19,11 @@ const InstrumentRack: React.FC<{ instrumentType: string; index: number }> = ({
     )) {
       for (let node of nodes) {
         if (node.start === dawState.step) {
-          console.log('notessss')
           let osc
           if (!oscs[note]) {
             osc = new OSC(note)
             setOscs({ ...oscs, [note]: osc })
+            osc.setHigh()
           } else {
             osc = oscs[note]
             osc.setHigh()
@@ -54,9 +54,6 @@ const InstrumentRack: React.FC<{ instrumentType: string; index: number }> = ({
 
   useEffect(() => {
     function handleResize() {
-      console.log(pianoSizeRef)
-      console.log(pianoSizeRef.current)
-      console.log(pianoSizeRef.current?.getBoundingClientRect())
       pianoSizeSet({
         width: pianoSizeRef.current?.getBoundingClientRect().width ?? 10,
         height: pianoSizeRef.current?.getBoundingClientRect().height ?? 10,

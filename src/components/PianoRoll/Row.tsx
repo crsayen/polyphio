@@ -38,10 +38,9 @@ const Row: React.FC<{
     const nRelX = normalizeStart(stepRelX)
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i]
-      console.log(nRelX, node.start)
       if (Math.abs(nRelX - node.start) < 5) {
         // TODO: we clicked an existing node. We should be able to
-        //       move it or change it's size
+        //       move it or change its size
         return
       }
       if (nRelX < node.start && nRelX + DEFAULT_NODE_LEGTH > node.start) {
@@ -49,7 +48,6 @@ const Row: React.FC<{
         return
       }
     }
-    console.log('created new node')
     setNodes([
       ...nodes,
       {

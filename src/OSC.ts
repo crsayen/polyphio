@@ -37,8 +37,7 @@ export default class OSC {
     this.high = false
     if (note) {
       this.oscillator.frequency.value = 400
-      //@ts-ignore
-      console.log(note)
+
       //@ts-ignore
       this.oscillator.frequency.value = notes[note]
     } else {

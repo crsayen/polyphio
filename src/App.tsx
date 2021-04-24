@@ -64,7 +64,6 @@ function App() {
   const [started, setStarted] = useState<boolean>(false)
 
   function handleStart() {
-    console.log('button pressed')
     OSC.context.resume()
     setStarted(true)
   }

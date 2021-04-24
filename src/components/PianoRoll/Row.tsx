@@ -1,89 +1,90 @@
 import './PianoRoll.css'
-import React, { useState, useEffect } from 'react'
+import * as types from '../../types'
+import { DawStateContext } from '../../App'
+import React, { useState, useContext } from 'react'
 import Node from './Node'
-import OSC from '../../OSC'
-import useInterval from 'react-useinterval'
+import { NUM_STEPS } from '../../constants'
 
-const MINNODEWIDTH = 30
+const DEFAULT_NODE_LEGTH = 72
 
-export default function Row(props: any) {
+const Row: React.FC<{
+  note: string
+  sharp: boolean
+  nodes: types.NoteNode[]
+  width: number
+  setNodes: (nodes: types.NoteNode[]) => void
+}> = ({ note, nodes, width, sharp, setNodes }) => {
   function getRelX(e: React.MouseEvent<HTMLDivElement, MouseEvent>): number {
     const currentTargetRect = e.currentTarget.getBoundingClientRect()
     const event_offsetX = e.pageX - currentTargetRect.left
     return event_offsetX
   }
 
+  function normalizeStart(val: number): number {
+    return Math.floor(val / DEFAULT_NODE_LEGTH) * DEFAULT_NODE_LEGTH
+  }
+
+  function stepValToPixelVal(val: number): number {
+    return Math.ceil((val / NUM_STEPS) * width)
+  }
+
+  function pixelValToStepVal(val: number): number {
+    return Math.floor((val / width) * NUM_STEPS)
+  }
+
   function handleMouseDown(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
-    setMouseDown(true)
-    const relX = getRelX(e)
-    setNodes([...nodes, { start: relX, width: MINNODEWIDTH }])
-  }
-
-  function handleMouseUp(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
-    setMouseDown(false)
-    const relX = getRelX(e)
-  }
-
-  function handleMouseMove(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
-    if (!mouseDown) return
-    const relX = getRelX(e)
-    let currNodeIdx = nodes.length - 1
-    let currNode = nodes[currNodeIdx]
+    const pixelRelX = getRelX(e)
+    const stepRelX = pixelValToStepVal(pixelRelX)
+    const nRelX = normalizeStart(stepRelX)
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i]
+      console.log(nRelX, node.start)
+      if (Math.abs(nRelX - node.start) < 5) {
+        // TODO: we clicked an existing node. We should be able to
+        //       move it or change it's size
+        return
+      }
+      if (nRelX < node.start && nRelX + DEFAULT_NODE_LEGTH > node.start) {
+        // this node would bump into an existing node
+        return
+      }
+    }
+    console.log('created new node')
     setNodes([
-      ...nodes.slice(0, currNodeIdx),
+      ...nodes,
       {
-        ...currNode,
-        width: Math.max(MINNODEWIDTH, relX - currNode.start),
+        start: nRelX,
+        length: DEFAULT_NODE_LEGTH,
       },
     ])
   }
 
-  const [tick, setTick] = useState<number>(0)
+  const { dawState, dawDispatch } = useContext(DawStateContext)
 
-  function playSounds() {
-    if (osc === null) {
-      setOsc(new OSC(props.note))
-    }
-    nodes.forEach((node) => {
-      if (node.start === tick) {
-        console.log(props.note)
-        //@ts-ignore
-        osc.setHigh()
-      } else if (node.start + node.width === tick) {
-        //@ts-ignore
-        osc.setLow()
-      }
-    })
-    if (tick > 1080) {
-      setTick(0)
-    } else {
-      setTick(tick + 1)
-    }
-  }
-
-  const [osc, setOsc] = useState<OSC | null>(null)
-
-  useInterval(playSounds, 10)
-
-  const [nodes, setNodes] = useState<{ start: number; width: number }[]>([])
-  const [mouseDown, setMouseDown] = useState<boolean>(false)
   return (
     <div
       onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onMouseMove={handleMouseMove}
-      className={`Row ${props.sharp ? 'blackkey' : 'whitekey'}`}
+      //onMouseUp={handleMouseUp}
+      //onMouseMove={handleMouseMove}
+      //onMouseLeave={handleMouseLeave}
+      className={`Row ${sharp ? 'blackkey' : 'whitekey'}`}
     >
-      {nodes.map((node) => (
-        <Node
-          key={node.start}
-          pos={{
-            marginLeft: `${node.start}px`,
-            marginRight: `${-(node.start + node.width)}px`,
-            width: `${node.width}px`,
-          }}
-        ></Node>
-      ))}
+      {nodes.map((node, i) => {
+        const start = stepValToPixelVal(node.start)
+        const width = stepValToPixelVal(node.length)
+        return (
+          <Node
+            key={i}
+            pos={{
+              marginLeft: `${start}px`,
+              marginRight: `${-(start + width)}px`,
+              width: `${width}px`,
+            }}
+          ></Node>
+        )
+      })}
     </div>
   )
 }
+
+export default Row

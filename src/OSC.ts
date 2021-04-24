@@ -18,6 +18,7 @@ try {
 }
 
 export default class OSC {
+  static context = context
   static sine: OscillatorType = 'sine'
   static square: OscillatorType = 'square'
   static sawtooth: OscillatorType = 'sawtooth'
@@ -25,6 +26,7 @@ export default class OSC {
   oscillator: OscillatorNode
   gain: GainNode
   adsr: ADSR
+  high: boolean
   #earliestEvent: number
   constructor(note: string = 'Ash4') {
     this.adsr = new ADSR()
@@ -32,6 +34,7 @@ export default class OSC {
     this.gain = context.createGain()
     this.oscillator.type = OSC.sawtooth
     this.oscillator.connect(this.gain)
+    this.high = false
     if (note) {
       this.oscillator.frequency.value = 400
       //@ts-ignore
@@ -49,6 +52,7 @@ export default class OSC {
   }
 
   setHigh() {
+    this.high = true
     this.gain.gain.setValueAtTime(1, context.currentTime)
     /* console.log('notes baby')
     const [aVal, aDel] = this.adsr.attackEvent
@@ -67,6 +71,7 @@ export default class OSC {
 
   setLow() {
     this.gain.gain.setValueAtTime(0, context.currentTime)
+    this.high = false
     /* const [rVal, rDel] = this.adsr.releaseEvent
     this.gain.gain.cancelScheduledValues(context.currentTime)
     this.gain.gain.linearRampToValueAtTime(

@@ -1,25 +1,53 @@
 import './PianoRoll.css'
+import * as types from '../../types'
 import Row from './Row'
-import React from 'react'
-const notenames = [4, 5, 6]
-  .map((n) =>
-    ['C', 'Csh', 'D', 'Dsh', 'E', 'F', 'Fsh', 'G', 'Gsh', 'A', 'Ash', 'B']
-      .map((d) => `${d}${n}`)
-      .join(',')
-  )
-  .join(',')
-  .split(',')
-  .reverse()
+import { DawStateContext } from '../../App'
+import React, { useContext } from 'react'
 
-function PianoRoll(props: any) {
+const PianoRoll: React.FC<{
+  //refs: React.RefObject<HTMLDivElement>
+  width: number
+  instrumentIndex: number
+  setNoteNodes: (note: string, nodes: types.NoteNode[]) => void
+}> = ({ setNoteNodes, width, instrumentIndex }) => {
+  const { dawState, dawDispatch } = useContext(DawStateContext)
+
+  const nodes = dawState.instruments[instrumentIndex].nodes
   return (
-    <div id="PianoRoll">
-      {notenames.map((notename: string) => (
-        <Row key={notename} note={notename} sharp={notename.includes('sh')}>
-          <p>{notename}</p>
-        </Row>
-      ))}
-    </div>
+    <>
+      <div className="grid">
+        <div className="gridline bold"></div>
+        <div className="gridline"></div>
+        <div className="gridline"></div>
+        <div className="gridline"></div>
+        <div className="gridline bold"></div>
+        <div className="gridline"></div>
+        <div className="gridline"></div>
+        <div className="gridline"></div>
+        <div className="gridline bold"></div>
+        <div className="gridline"></div>
+        <div className="gridline"></div>
+        <div className="gridline"></div>
+        <div className="gridline bold"></div>
+        <div className="gridline"></div>
+        <div className="gridline"></div>
+        <div className="gridline"></div>
+      </div>
+      <div id="PianoRoll">
+        {Object.entries(nodes)
+          .reverse()
+          .map(([note, nodes], i) => (
+            <Row
+              key={i}
+              note={note}
+              width={width}
+              nodes={nodes}
+              sharp={note.includes('sh')}
+              setNodes={(nodes: types.NoteNode[]) => setNoteNodes(note, nodes)}
+            ></Row>
+          ))}
+      </div>
+    </>
   )
 }
 

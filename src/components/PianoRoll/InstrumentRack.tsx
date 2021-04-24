@@ -18,21 +18,8 @@ const InstrumentRack: React.FC<{ instrumentType: string; index: number }> = ({
       dawState.instruments[index].nodes
     )) {
       for (let node of nodes) {
-        if (node.start === dawState.step) {
-          let osc
-          if (!oscs[note]) {
-            osc = new OSC(note)
-            setOscs({ ...oscs, [note]: osc })
-            osc.setHigh()
-          } else {
-            osc = oscs[note]
-            osc.setHigh()
-          }
-        } else if (node.start + node.length === dawState.step) {
-          if (oscs[note]) {
-            oscs[note].setLow()
-          }
-        }
+        if (node.start === dawState.step) oscs[note].setHigh()
+        else if (node.start + node.length === dawState.step) oscs[note].setLow()
       }
     }
     dawDispatch({ type: 'setStep', data: dawState.step + 1 })
@@ -58,6 +45,11 @@ const InstrumentRack: React.FC<{ instrumentType: string; index: number }> = ({
         width: pianoSizeRef.current?.getBoundingClientRect().width ?? 10,
         height: pianoSizeRef.current?.getBoundingClientRect().height ?? 10,
       })
+      for (let note of Object.keys(dawState.instruments[index].nodes)) {
+        setOscs((o) => {
+          return { ...o, [note]: new OSC(note) }
+        })
+      }
     }
     window.addEventListener('resize', handleResize)
     handleResize()

@@ -52,49 +52,31 @@ export type DawStateContextType = {
   dawDispatch: React.Dispatch<DawAction>
 }
 
-export type InstrumentState = {
-  type: string
+export type InstrumentState = SynthState | SequencerState
+
+export type NoteNode = SynthNoteNode | SequencerNoteNode
+
+export type SynthNoteNode = {
+  type: 'synth'
+  start: number
+  length: number
+}
+
+export type SequencerNoteNode = {
+  type: 'seq'
+  start: number
+}
+
+export type SequencerState = {
+  type: 'seq'
   nodes: {
-    C4: NoteNode[]
-    Csh4: NoteNode[]
-    D4: NoteNode[]
-    Dsh4: NoteNode[]
-    E4: NoteNode[]
-    F4: NoteNode[]
-    Fsh4: NoteNode[]
-    G4: NoteNode[]
-    Gsh4: NoteNode[]
-    A4: NoteNode[]
-    Ash4: NoteNode[]
-    B4: NoteNode[]
-    C5: NoteNode[]
-    Csh5: NoteNode[]
-    D5: NoteNode[]
-    Dsh5: NoteNode[]
-    E5: NoteNode[]
-    F5: NoteNode[]
-    Fsh5: NoteNode[]
-    G5: NoteNode[]
-    Gsh5: NoteNode[]
-    A5: NoteNode[]
-    Ash5: NoteNode[]
-    B5: NoteNode[]
-    C6: NoteNode[]
-    Csh6: NoteNode[]
-    D6: NoteNode[]
-    Dsh6: NoteNode[]
-    E6: NoteNode[]
-    F6: NoteNode[]
-    Fsh6: NoteNode[]
-    G6: NoteNode[]
-    Gsh6: NoteNode[]
-    A6: NoteNode[]
-    Ash6: NoteNode[]
-    B6: NoteNode[]
+    [note: string]: SequencerNoteNode[]
   }
 }
 
-export type NoteNode = {
-  start: number
-  length: number
+export type SynthState = {
+  type: 'synth'
+  nodes: {
+    [note: string]: NoteNode[]
+  }
 }

@@ -75,7 +75,7 @@ function App() {
       <div className="App">
         {started ? (
           <>
-            <header className="App-header">fuck ass</header>
+            <header className="App-header">asdfhjkl</header>
             {state.instruments.map(
               (instrument: types.InstrumentState, index: number) => {
                 return (

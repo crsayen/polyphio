@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
+import { getRelXY } from '../../helpers'
 
 const style = {
-  height: '100%',
+  height: '20px',
   padding: '0px',
   backgroundColor: 'rgba(240, 163, 163, 0.8)',
-  marginTop: '-1px',
-  marginBottom: '1px',
+  outline: '1px solid rgba(0,0,0,0.5)',
   display: 'flex',
   flexDirection: 'row',
 }
@@ -19,9 +19,9 @@ const Row: React.FC<{
   const [lastMoveX, setLastMoveX] = useState<number>(0)
   function handleMove(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     e.preventDefault()
-    const relX = getRelX(e)
-    const ignore = Math.abs(relX - lastMoveX) > 30
-    setLastMoveX(relX)
+    const [x] = getRelXY(e)
+    const ignore = Math.abs(x - lastMoveX) > 30
+    setLastMoveX(x)
     if (!ignore) onMove(e)
   }
 
@@ -35,7 +35,7 @@ const Row: React.FC<{
       <div
         className="nodehandle"
         draggable="true"
-        onDrag={handleMove}
+        onDragEnd={handleMove}
         onDoubleClick={onDelete}
       ></div>
       <div
@@ -45,12 +45,6 @@ const Row: React.FC<{
       ></div>
     </div>
   )
-}
-
-function getRelX(e: React.MouseEvent<HTMLDivElement, MouseEvent>): number {
-  const currentTargetRect = e.currentTarget.getBoundingClientRect()
-  const event_offsetX = e.pageX - currentTargetRect.left
-  return event_offsetX
 }
 
 export default Row

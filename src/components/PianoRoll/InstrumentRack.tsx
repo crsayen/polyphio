@@ -22,7 +22,7 @@ const InstrumentRack: React.FC<{ instrumentType: string; index: number }> = ({
     )) {
       for (let node of nodes) {
         if (node.start === dawState.step) oscs[note].setHigh()
-        else if (node.start + node.length === dawState.step) oscs[note].setLow()
+        if (node.start + node.length === dawState.step) oscs[note].setLow()
       }
     }
     dawDispatch({ type: 'setStep', data: dawState.step + 1 })

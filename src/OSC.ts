@@ -51,9 +51,9 @@ export default class OSC {
   }
 
   setHigh() {
-    this.high = true
-    this.gain.gain.setValueAtTime(1, context.currentTime)
-    /* console.log('notes baby')
+    //this.high = true
+    //this.gain.gain.setValueAtTime(1, context.currentTime)
+    console.log('notes baby')
     const [aVal, aDel] = this.adsr.attackEvent
     const [dVal, dDel] = this.adsr.decayEvent
     this.gain.gain.cancelScheduledValues(context.currentTime)
@@ -65,19 +65,19 @@ export default class OSC {
       dVal,
       Math.max(context.currentTime, this.#earliestEvent) + aDel + dDel
     )
-    this.#earliestEvent = context.currentTime */
+    this.#earliestEvent = context.currentTime
   }
 
   setLow() {
-    this.gain.gain.setValueAtTime(0, context.currentTime)
-    this.high = false
-    /* const [rVal, rDel] = this.adsr.releaseEvent
+    //this.gain.gain.setValueAtTime(0, context.currentTime)
+    //this.high = false
+    const [rVal, rDel] = this.adsr.releaseEvent
     this.gain.gain.cancelScheduledValues(context.currentTime)
     this.gain.gain.linearRampToValueAtTime(
       rVal,
       Math.max(context.currentTime, this.#earliestEvent) + rDel
     )
-    this.#earliestEvent = context.currentTime */
+    this.#earliestEvent = context.currentTime
   }
 
   get context() {

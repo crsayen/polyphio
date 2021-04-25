@@ -8,10 +8,10 @@ export default class ADSR {
   sustainLevel: number
   releaseDuration: number
   constructor() {
-    this.attackDuration = 50
+    this.attackDuration = 100
     this.attackLevel = 1
     this.decayDuration = 100
-    this.sustainLevel = 0.5
+    this.sustainLevel = 0.8
     this.releaseDuration = 400
   }
 

@@ -5,16 +5,17 @@ import React, { useState, useContext } from 'react'
 import Node from './Node'
 import { NUM_STEPS } from '../../constants'
 
-const DEFAULT_NODE_LEGTH = 72
 const MINIMUM_NODE_LEGTH = 8
 
 const Row: React.FC<{
   note: string
+  rowIndex: number
   sharp: boolean
   nodes: types.NoteNode[]
+  defaultNodeSize: number
   width: number
   setNodes: (nodes: types.NoteNode[]) => void
-}> = ({ note, nodes, width, sharp, setNodes }) => {
+}> = ({ rowIndex, defaultNodeSize, note, nodes, width, sharp, setNodes }) => {
   function getRelX(e: React.MouseEvent<HTMLDivElement, MouseEvent>): number {
     const currentTargetRect = e.currentTarget.getBoundingClientRect()
     const event_offsetX = e.pageX - currentTargetRect.left
@@ -52,7 +53,7 @@ const Row: React.FC<{
   }
 
   function snapToNodeGrid(val: number): number {
-    return Math.floor(val / DEFAULT_NODE_LEGTH) * DEFAULT_NODE_LEGTH
+    return Math.floor(val / defaultNodeSize) * defaultNodeSize
   }
 
   function snapToGridFine(val: number): number {
@@ -67,7 +68,7 @@ const Row: React.FC<{
     return Math.floor((val / width) * NUM_STEPS)
   }
 
-  function handleMouseDown(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+  function handleClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     const stepRelX = pixelValToStepVal(getRelX(e))
     const nRelX = snapToNodeGrid(stepRelX)
     if (overlapsNode({ points: [stepRelX] })) {
@@ -76,7 +77,7 @@ const Row: React.FC<{
       console.log('you clicked an existing node')
       return
     }
-    if (overlapsNode({ points: [nRelX, nRelX + DEFAULT_NODE_LEGTH] })) {
+    if (overlapsNode({ points: [nRelX + 1, nRelX + defaultNodeSize] })) {
       // this node would bump into an existing node
       console.log('not enough room')
       return
@@ -85,20 +86,25 @@ const Row: React.FC<{
       ...nodes,
       {
         start: nRelX,
-        length: DEFAULT_NODE_LEGTH,
+        length: defaultNodeSize,
       },
     ])
   }
 
   const { dawState, dawDispatch } = useContext(DawStateContext)
 
-  const handleResize = (
+  const handleResizeNode = (
     nodeIndex: number,
     e: React.MouseEvent<HTMLDivElement, MouseEvent>
   ) => {
     const node = nodes[nodeIndex]
     const snappedDelta = snapToGridFine(pixelValToStepVal(getRelX(e)))
-    if (node.start + snappedDelta < node.start + MINIMUM_NODE_LEGTH) return
+    // make sure we don't shrink too much
+    if (
+      node.start + node.length + snappedDelta <
+      node.start + MINIMUM_NODE_LEGTH
+    )
+      return
     // check if we are bumping into any other nodes
     if (
       overlapsNode({
@@ -124,9 +130,51 @@ const Row: React.FC<{
     ])
   }
 
+  const handleMoveNode = (
+    nodeIndex: number,
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    const node = nodes[nodeIndex]
+    const snappedDelta = snapToGridFine(pixelValToStepVal(getRelX(e)))
+    // make sure we don't move off the grid
+    if (node.start + snappedDelta < 0 || node.start + node.length > NUM_STEPS)
+      return
+    // check if we are bumping into any other nodes
+    if (
+      overlapsNode({
+        exclude: [nodeIndex],
+        points: [
+          node.start + snappedDelta,
+          node.start + node.length + snappedDelta,
+        ],
+      })
+    )
+      return
+    // check if we are going to eat another node
+    const eatenNode = getContainedNode({
+      exclude: [nodeIndex],
+      start: node.start,
+      end: node.start + node.length,
+    })
+    let newNodes =
+      eatenNode === null
+        ? nodes
+        : [...nodes.slice(0, eatenNode - 1), ...nodes.slice(eatenNode + 1)]
+    setNodes([
+      ...newNodes.slice(0, nodeIndex),
+      { ...node, start: node.start + snappedDelta },
+      ...newNodes.slice(nodeIndex + 1),
+    ])
+  }
+
+  function handleDoubleClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    // delete bot
+  }
+
   return (
     <div
-      onMouseDown={handleMouseDown}
+      onClick={handleClick}
+      onDoubleClick={handleDoubleClick}
       className={`Row ${sharp ? 'blackkey' : 'whitekey'}`}
     >
       {nodes.map((node, i) => {
@@ -141,8 +189,14 @@ const Row: React.FC<{
               width: `${width}px`,
             }}
             onResize={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) =>
-              handleResize(i, e)
+              handleResizeNode(i, e)
             }
+            onMove={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) =>
+              handleMoveNode(i, e)
+            }
+            onDelete={() => {
+              setNodes([...nodes.slice(0, i), ...nodes.slice(i + 1)])
+            }}
           ></Node>
         )
       })}

@@ -1,4 +1,18 @@
+function round(n: number): number {
+  return 0 ^ (n + 0.5)
+}
+
 export const NUM_STEPS = 1152
+export const MEASURE_LENGTH = round(NUM_STEPS / 4)
+
+export const NOTESIZE: { [note: string]: number } = {
+  whole: MEASURE_LENGTH,
+  half: round(MEASURE_LENGTH / 2),
+  quarter: round(MEASURE_LENGTH / 4),
+  eighth: round(MEASURE_LENGTH / 8),
+  sixteenth: round(MEASURE_LENGTH / 16),
+  thirtysecond: round(MEASURE_LENGTH / 32),
+}
 
 export const NOTES = [4, 5, 6]
   .map((n) =>

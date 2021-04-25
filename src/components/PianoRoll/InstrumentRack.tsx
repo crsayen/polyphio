@@ -3,6 +3,8 @@ import * as types from '../../types'
 import { DawStateContext } from '../../App'
 import React, { useContext, useRef, useState, useEffect } from 'react'
 import useInterval from 'react-useinterval'
+import { NOTESIZE } from '../../constants'
+import Select from 'react-select'
 import PianoRoll from './PianoRoll'
 import OSC from '../../OSC'
 
@@ -12,6 +14,7 @@ const InstrumentRack: React.FC<{ instrumentType: string; index: number }> = ({
 }) => {
   const { dawState, dawDispatch } = useContext(DawStateContext)
   const [oscs, setOscs] = useState<{ [note: string]: OSC }>({})
+  const [noteSize, setNoteSize] = useState<string>('quarter')
 
   function handleTick() {
     for (let [note, nodes] of Object.entries(
@@ -58,14 +61,29 @@ const InstrumentRack: React.FC<{ instrumentType: string; index: number }> = ({
   // TODO: instrument panel
   // TODO: 'delete' button
   return (
-    <div ref={pianoSizeRef}>
-      <PianoRoll
-        width={pianoSize.width}
-        instrumentIndex={index}
-        setNoteNodes={setNoteNodes}
-      />
+    <div>
+      <Select
+        defaultValue={{ value: 'quarter', label: 'quarter note' }}
+        options={noteOptions}
+        onChange={(n) => setNoteSize(n?.value ?? '')}
+      ></Select>
+      <div ref={pianoSizeRef}>
+        <PianoRoll
+          width={pianoSize.width}
+          instrumentIndex={index}
+          defaultNodeSize={NOTESIZE[noteSize]}
+          setNoteNodes={setNoteNodes}
+        />
+      </div>
     </div>
   )
 }
+
+const noteOptions = Object.keys(NOTESIZE).map((notename) => {
+  return {
+    value: notename,
+    label: notename + ' note',
+  }
+})
 
 export default InstrumentRack

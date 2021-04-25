@@ -1,9 +1,8 @@
 import './App.css'
 import * as types from './types'
 import OSC from './OSC'
-import { NOTES, NOTE_OBJ, NUM_STEPS } from './constants'
+import { NOTE_OBJ, NUM_STEPS } from './constants'
 import React, { useState, useReducer } from 'react'
-import useInterval from 'react-useinterval'
 import InstrumentRack from './components/PianoRoll/InstrumentRack'
 
 // TODO: this should be something we can load from server
@@ -75,7 +74,7 @@ function App() {
       <div className="App">
         {started ? (
           <>
-            <header className="App-header">asdfhjkl</header>
+            <header className="App-header">polyph.io</header>
             {state.instruments.map(
               (instrument: types.InstrumentState, index: number) => {
                 return (

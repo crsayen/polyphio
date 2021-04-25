@@ -13,39 +13,44 @@ const style = {
 const Row: React.FC<{
   css: any
   onResize: any
-}> = ({ css, onResize }) => {
+  onDelete: any
+  onMove: any
+}> = ({ onDelete, css, onMove, onResize }) => {
+  const [lastMoveX, setLastMoveX] = useState<number>(0)
+  function handleMove(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    e.preventDefault()
+    const relX = getRelX(e)
+    const ignore = Math.abs(relX - lastMoveX) > 30
+    setLastMoveX(relX)
+    if (!ignore) onMove(e)
+  }
+
   function handleResize(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    e.preventDefault()
     onResize(e)
   }
 
   return (
     <div className="node" style={{ ...style, ...css }}>
-      <div className="nodehandle"></div>
+      <div
+        className="nodehandle"
+        draggable="true"
+        onDrag={handleMove}
+        onDoubleClick={onDelete}
+      ></div>
       <div
         draggable="true"
         className="nodestretcher"
-        onClick={() => console.log('clicked')}
         onDrag={handleResize}
       ></div>
     </div>
   )
 }
 
+function getRelX(e: React.MouseEvent<HTMLDivElement, MouseEvent>): number {
+  const currentTargetRect = e.currentTarget.getBoundingClientRect()
+  const event_offsetX = e.pageX - currentTargetRect.left
+  return event_offsetX
+}
+
 export default Row
-
-/* const [originalEndX, setOriginalEndX] = useState<number>(0)
-  const [resizing, setResizing] = useState<boolean>(false)
-
-  function handleResizeMouseDown(
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>
-  ) {
-    setOriginalEndX(css.width + css.marginLeft)
-    setResizing(true)
-  }
-  function handleResizeMouseMove(
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>
-  ) {
-    if (!resizing) return
-    const relX = getRelX(e)
-    onResize(relX - originalEndX)
-  } */

@@ -8,8 +8,9 @@ const PianoRoll: React.FC<{
   //refs: React.RefObject<HTMLDivElement>
   width: number
   instrumentIndex: number
+  defaultNodeSize: number
   setNoteNodes: (note: string, nodes: types.NoteNode[]) => void
-}> = ({ setNoteNodes, width, instrumentIndex }) => {
+}> = ({ setNoteNodes, width, defaultNodeSize, instrumentIndex }) => {
   const { dawState, dawDispatch } = useContext(DawStateContext)
 
   const nodes = dawState.instruments[instrumentIndex].nodes
@@ -40,8 +41,10 @@ const PianoRoll: React.FC<{
             <Row
               key={i}
               note={note}
+              rowIndex={i}
               width={width}
               nodes={nodes}
+              defaultNodeSize={defaultNodeSize}
               sharp={note.includes('sh')}
               setNodes={(nodes: types.NoteNode[]) => setNoteNodes(note, nodes)}
             ></Row>

@@ -5,25 +5,32 @@ import { DawStateContext } from '../../../App'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import useInterval from 'react-useinterval'
 import OSC from '../../../OSC'
+import Select from 'react-select'
+import { NOTESIZE } from '../../../constants'
 
 const TICK_DUR = 10
 
 const PianoRoll: React.FC<{
   //refs: React.RefObject<HTMLDivElement>
   instrumentIndex: number
-  defaultNodeSize: number
-}> = ({ defaultNodeSize, instrumentIndex }) => {
+}> = ({ instrumentIndex }) => {
   const [oscs, setOscs] = useState<{ [note: string]: OSC }>({})
   const { dawState, dawDispatch } = useContext(DawStateContext)
   const [jobs, setJobs] = useState<Function[]>([])
+  const [noteSize, setNoteSize] = useState<string>('quarter')
 
-  function setNoteNodes(note: string, nodes: types.NoteNode[]) {
-    dawDispatch({ type: 'setNoteNodes', instrumentIndex, note, nodes })
+  function setNoteNodes(note: string, nodes: types.SynthNoteNode[]) {
+    dawDispatch({
+      type: 'setSynthNoteNodes',
+      index: instrumentIndex,
+      note,
+      nodes,
+    })
   }
 
   function handleTick() {
     for (let [note, nodes] of Object.entries(
-      dawState.instruments[instrumentIndex].nodes
+      dawState.synths[instrumentIndex].nodes
     )) {
       let osc = oscs[note]
       for (let node of [...nodes]) {
@@ -45,7 +52,7 @@ const PianoRoll: React.FC<{
         }
       }
     }
-    dawDispatch({ type: 'setStep', data: dawState.step + 1 })
+    dawDispatch({ type: 'setStep', step: dawState.step + 1 })
   }
 
   useInterval(() => handleTick(), TICK_DUR)
@@ -64,9 +71,7 @@ const PianoRoll: React.FC<{
         width: pianoSizeRef.current?.getBoundingClientRect().width ?? 10,
         height: pianoSizeRef.current?.getBoundingClientRect().height ?? 10,
       })
-      for (let note of Object.keys(
-        dawState.instruments[instrumentIndex].nodes
-      )) {
+      for (let note of Object.keys(dawState.synths[instrumentIndex].nodes)) {
         setOscs((o) => {
           return { ...o, [note]: new OSC(note) }
         })
@@ -75,47 +80,63 @@ const PianoRoll: React.FC<{
     window.addEventListener('resize', handleResize)
     handleResize()
     return () => window.removeEventListener('resize', handleResize)
-  }, [dawState.instruments, instrumentIndex])
+  }, [dawState.synths, instrumentIndex])
 
-  const nodes = dawState.instruments[instrumentIndex].nodes
+  const nodes = dawState.synths[instrumentIndex].nodes
   return (
-    <div ref={pianoSizeRef}>
-      <div className="grid">
-        <div className="gridline bold"></div>
-        <div className="gridline"></div>
-        <div className="gridline"></div>
-        <div className="gridline"></div>
-        <div className="gridline bold"></div>
-        <div className="gridline"></div>
-        <div className="gridline"></div>
-        <div className="gridline"></div>
-        <div className="gridline bold"></div>
-        <div className="gridline"></div>
-        <div className="gridline"></div>
-        <div className="gridline"></div>
-        <div className="gridline bold"></div>
-        <div className="gridline"></div>
-        <div className="gridline"></div>
-        <div className="gridline"></div>
+    <>
+      <Select
+        defaultValue={{ value: 'quarter', label: 'quarter note' }}
+        options={noteOptions}
+        onChange={(n) => setNoteSize(n?.value ?? '')}
+      />
+      <div ref={pianoSizeRef}>
+        <div className="grid">
+          <div className="gridline bold"></div>
+          <div className="gridline"></div>
+          <div className="gridline"></div>
+          <div className="gridline"></div>
+          <div className="gridline bold"></div>
+          <div className="gridline"></div>
+          <div className="gridline"></div>
+          <div className="gridline"></div>
+          <div className="gridline bold"></div>
+          <div className="gridline"></div>
+          <div className="gridline"></div>
+          <div className="gridline"></div>
+          <div className="gridline bold"></div>
+          <div className="gridline"></div>
+          <div className="gridline"></div>
+          <div className="gridline"></div>
+        </div>
+        <div id="PianoRoll">
+          {Object.entries(nodes)
+            .reverse()
+            .map(([note, nodes], i) => (
+              <Row
+                key={i}
+                note={note}
+                rowIndex={i}
+                width={pianoSize.width}
+                nodes={nodes}
+                defaultNodeSize={NOTESIZE[noteSize]}
+                sharp={note.includes('sh')}
+                setNodes={(nodes: types.SynthNoteNode[]) =>
+                  setNoteNodes(note, nodes)
+                }
+              ></Row>
+            ))}
+        </div>
       </div>
-      <div id="PianoRoll">
-        {Object.entries(nodes)
-          .reverse()
-          .map(([note, nodes], i) => (
-            <Row
-              key={i}
-              note={note}
-              rowIndex={i}
-              width={pianoSize.width}
-              nodes={nodes}
-              defaultNodeSize={defaultNodeSize}
-              sharp={note.includes('sh')}
-              setNodes={(nodes: types.NoteNode[]) => setNoteNodes(note, nodes)}
-            ></Row>
-          ))}
-      </div>
-    </div>
+    </>
   )
 }
+
+const noteOptions = Object.keys(NOTESIZE).map((notename) => {
+  return {
+    value: notename,
+    label: notename + ' note',
+  }
+})
 
 export default PianoRoll

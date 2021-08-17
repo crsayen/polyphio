@@ -3,14 +3,18 @@ import * as types from './types'
 import OSC from './OSC'
 import { NOTE_OBJ, NUM_STEPS } from './constants'
 import React, { useState, useReducer } from 'react'
-import InstrumentRack from './components/PianoRoll/InstrumentRack'
+import InstrumentRack from './components/Instruments/InstrumentRack'
 
 // TODO: this should be something we can load from server
 const initialState: types.DawState = {
-  instruments: [
+  synths: [
     {
-      type: 'synth',
       nodes: NOTE_OBJ,
+    },
+  ],
+  sequencers: [
+    {
+      nodes: [],
     },
   ],
   playing: false,
@@ -20,32 +24,49 @@ const initialState: types.DawState = {
 
 function dawStateReducer(state: types.DawState, action: types.DawAction) {
   switch (action.type) {
-    case 'addInstrument':
-      return { ...state, instruments: [...state.instruments, action.data] }
+    case 'addSynth':
+      return { ...state, synths: [...state.synths, action.synth] }
+    case 'addSequencer':
+      return { ...state, sequencers: [...state.sequencers, action.sequencer] }
     case 'delInstrument':
       return {
         ...state,
-        instruments: [
-          ...state.instruments.slice(0, action.data),
-          ...state.instruments.slice(action.data + 1),
+        [action.instrumentType]: [
+          ...state[action.instrumentType].slice(0, action.instrumentIndex),
+          ...state[action.instrumentType].slice(action.instrumentIndex + 1),
         ],
       }
     case 'setPlaying':
-      return { ...state, playing: action.data }
+      return { ...state, playing: action.playing }
     case 'setStep':
-      return { ...state, step: action.data % (NUM_STEPS + 1) }
+      return { ...state, step: action.step % (NUM_STEPS + 1) }
     case 'setBpm':
-      return { ...state, bpm: action.data }
-    case 'setNoteNodes':
-      const instr = state.instruments
-      const idx = action.instrumentIndex
-      const nodes = { ...instr[idx].nodes, [action.note]: action.nodes }
+      return { ...state, bpm: action.bpm }
+    case 'setSequencerNoteNodes':
+      const seq = state.sequencers
+      const seqidx = action.index
+      const seqnodes = action.nodes
+      return {
+        ...state,
+        sequencers: [
+          ...seq.slice(seqidx - 1),
+          { ...seq[seqidx], seqnodes },
+          ...seq.slice(seqidx + 1),
+        ],
+      }
+    case 'setSynthNoteNodes':
+      const synth = state.synths
+      const synthidx = action.index
+      const synthnodes = {
+        ...synth[synthidx].nodes,
+        [action.note]: action.nodes,
+      }
       return {
         ...state,
         instruments: [
-          ...instr.slice(0, idx - 1),
-          { ...instr[idx], nodes },
-          ...instr.slice(idx + 1),
+          ...synth.slice(0, synthidx - 1),
+          { ...synth[synthidx], synthnodes },
+          ...synth.slice(synthidx + 1),
         ],
       }
     default:
@@ -74,13 +95,24 @@ function App() {
       <div className="App">
         {started ? (
           <>
-            <header className="App-header">polyph.io</header>
-            {state.instruments.map(
-              (instrument: types.InstrumentState, index: number) => {
+            <header onClick={() => console.log('head')} className="App-header">
+              polyph.io
+            </header>
+            {state.synths.map((instrument: types.SynthState, index: number) => {
+              return (
+                <InstrumentRack
+                  key={'syn' + index}
+                  instrumentType={'synth'}
+                  index={index}
+                />
+              )
+            })}
+            {state.sequencers.map(
+              (instrument: types.SequencerState, index: number) => {
                 return (
                   <InstrumentRack
-                    key={index}
-                    instrumentType={instrument.type}
+                    key={'seq' + index}
+                    instrumentType={'sequencer'}
                     index={index}
                   />
                 )

@@ -11,10 +11,10 @@ const Row: React.FC<{
   note: string
   rowIndex: number
   sharp: boolean
-  nodes: types.NoteNode[]
+  nodes: types.SynthNoteNode[]
   defaultNodeSize: number
   width: number
-  setNodes: (nodes: types.NoteNode[]) => void
+  setNodes: (nodes: types.SynthNoteNode[]) => void
 }> = ({ rowIndex, defaultNodeSize, note, nodes, width, sharp, setNodes }) => {
   function getRelX(e: React.MouseEvent<HTMLDivElement, MouseEvent>): number {
     const currentTargetRect = e.currentTarget.getBoundingClientRect()
@@ -69,6 +69,7 @@ const Row: React.FC<{
   }
 
   function handleClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    console.log('clicked')
     const stepRelX = pixelValToStepVal(getRelX(e))
     const nRelX = snapToNodeGrid(stepRelX)
     if (overlapsNode({ points: [stepRelX] })) {
